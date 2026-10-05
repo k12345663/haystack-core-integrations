@@ -35,3 +35,10 @@ To run the ranker server, use CPU Docker image:
 docker run --rm -p 8002:8000 -e VLLM_CPU_OMP_THREADS_BIND=0-3 vllm/vllm-openai-cpu:latest \
     --model BAAI/bge-reranker-base --enforce-eager
 ```
+
+To run the image embedding server, use CPU Docker image:
+```bash
+# image embedders server (port 8003)
+docker run --rm -p 8003:8000 -e VLLM_CPU_OMP_THREADS_BIND=0-3 vllm/vllm-openai-cpu:latest \
+    --model openai/clip-vit-base-patch32 --runner pooling --enforce-eager
+```
