@@ -498,6 +498,37 @@ class TestQdrantDocumentStore(
         with pytest.raises(DuplicateDocumentError):
             document_store.write_documents(docs, DuplicatePolicy.FAIL)
 
+    def test_write_documents_none_policy_rejects_existing_id(self):
+        document_store = QdrantDocumentStore(
+            location=":memory:", embedding_dim=3, recreate_index=True, progress_bar=False
+        )
+        original = Document(id="existing", content="original", embedding=[0.1, 0.2, 0.3])
+        replacement = Document(id="existing", content="replacement", embedding=[0.3, 0.2, 0.1])
+        document_store.write_documents([original])
+
+        with pytest.raises(DuplicateDocumentError):
+            document_store.write_documents([replacement], policy=DuplicatePolicy.NONE)
+
+        stored = document_store.get_documents_by_id(["existing"])
+        assert len(stored) == 1
+        assert stored[0].content == "original"
+
+    @pytest.mark.asyncio
+    async def test_write_documents_async_none_policy_rejects_existing_id(self):
+        document_store = QdrantDocumentStore(
+            location=":memory:", embedding_dim=3, recreate_index=True, progress_bar=False
+        )
+        original = Document(id="existing", content="original", embedding=[0.1, 0.2, 0.3])
+        replacement = Document(id="existing", content="replacement", embedding=[0.3, 0.2, 0.1])
+        await document_store.write_documents_async([original])
+
+        with pytest.raises(DuplicateDocumentError):
+            await document_store.write_documents_async([replacement], policy=DuplicatePolicy.NONE)
+
+        stored = await document_store.get_documents_by_id_async(["existing"])
+        assert len(stored) == 1
+        assert stored[0].content == "original"
+
     def test_sparse_configuration(self):
         document_store = QdrantDocumentStore(
             ":memory:",
