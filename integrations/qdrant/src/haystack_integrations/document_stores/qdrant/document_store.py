@@ -416,6 +416,7 @@ class QdrantDocumentStore:
 
         The QdrantDocumentStore can handle duplicate documents based on the given policy.
         The available policies are:
+        - `NONE`: Behaves like `FAIL` to prevent accidental overwrites.
         - `FAIL`: The operation will raise an error if any document already exists.
         - `OVERWRITE`: Existing documents will be overwritten with the new ones.
         - `SKIP`: Existing documents will be skipped, and only new documents will be added.
@@ -470,6 +471,7 @@ class QdrantDocumentStore:
 
         The QdrantDocumentStore can handle duplicate documents based on the given policy.
         The available policies are:
+        - `NONE`: Behaves like `FAIL` to prevent accidental overwrites.
         - `FAIL`: The operation will raise an error if any document already exists.
         - `OVERWRITE`: Existing documents will be overwritten with the new ones.
         - `SKIP`: Existing documents will be skipped, and only new documents will be added.
@@ -2387,12 +2389,12 @@ class QdrantDocumentStore:
         :returns: A list of Haystack Document objects.
         """
 
-        if policy in (DuplicatePolicy.SKIP, DuplicatePolicy.FAIL):
+        if policy in (DuplicatePolicy.NONE, DuplicatePolicy.SKIP, DuplicatePolicy.FAIL):
             documents = self._drop_duplicate_documents(documents)
             documents_found = self.get_documents_by_id(ids=[doc.id for doc in documents])
             ids_exist_in_db: list[str] = [doc.id for doc in documents_found]
 
-            if len(ids_exist_in_db) > 0 and policy == DuplicatePolicy.FAIL:
+            if ids_exist_in_db and policy in (DuplicatePolicy.NONE, DuplicatePolicy.FAIL):
                 msg = f"Document with ids '{', '.join(ids_exist_in_db)} already exists in index = '{self.index}'."
                 raise DuplicateDocumentError(msg)
 
@@ -2415,12 +2417,12 @@ class QdrantDocumentStore:
         :returns: A list of Haystack Document objects.
         """
 
-        if policy in (DuplicatePolicy.SKIP, DuplicatePolicy.FAIL):
+        if policy in (DuplicatePolicy.NONE, DuplicatePolicy.SKIP, DuplicatePolicy.FAIL):
             documents = self._drop_duplicate_documents(documents)
             documents_found = await self.get_documents_by_id_async(ids=[doc.id for doc in documents])
             ids_exist_in_db: list[str] = [doc.id for doc in documents_found]
 
-            if len(ids_exist_in_db) > 0 and policy == DuplicatePolicy.FAIL:
+            if ids_exist_in_db and policy in (DuplicatePolicy.NONE, DuplicatePolicy.FAIL):
                 msg = f"Document with ids '{', '.join(ids_exist_in_db)} already exists in index = '{self.index}'."
                 raise DuplicateDocumentError(msg)
 
